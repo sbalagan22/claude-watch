@@ -14,8 +14,6 @@ Claude Watch puts every Claude Code session in your macOS menu bar — working, 
 [![Free & Open Source](https://img.shields.io/badge/Free-Open%20Source-D97757)](#)
 [![GitHub Stars](https://img.shields.io/github/stars/sbalagan22/claude-watch?style=social)](https://github.com/sbalagan22/claude-watch/stargazers)
 
-**[⬇ Download the latest .dmg](https://github.com/sbalagan22/claude-watch/releases/latest)** · [Website](https://claudewatch.app) · [Changelog](https://claudewatch.app/changelog)
-
 </div>
 
 ---
