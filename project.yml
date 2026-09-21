@@ -1,0 +1,99 @@
+name: ClaudeWatch
+options:
+  bundleIdPrefix: com.sukhman
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  xcodeVersion: "1600"
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    ARCHS: "$(ARCHS_STANDARD)"        # arm64 + x86_64 => universal
+    ONLY_ACTIVE_ARCH: NO
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"           # ad-hoc; swap to Developer ID when the cert exists
+    DEAD_CODE_STRIPPING: YES
+    CLANG_ENABLE_MODULES: YES
+    GCC_WARN_UNINITIALIZED_AUTOS: YES
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: NO
+
+targets:
+  ClaudeWatch:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources/ClaudeWatch
+      # Shipped inside the bundle so the app can install the hook bridge
+      # itself. Both land flat in Contents/Resources/.
+      - path: Resources/claude-watch-status.sh
+        buildPhase: resources
+      - path: Scripts/install-hooks.py
+        buildPhase: resources
+      - path: Resources/done.wav
+        buildPhase: resources
+      # The official logo: app icon, onboarding, About, panel header.
+      - path: Resources/AppIcon.icns
+        buildPhase: resources
+      - path: Resources/AppMark.png
+        buildPhase: resources
+      - path: Resources/AppMarkSmall.png
+        buildPhase: resources
+    entitlements:
+      path: Resources/ClaudeWatch.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.automation.apple-events: true
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleName: Claude Watch
+        CFBundleDisplayName: Claude Watch
+        # The official logo. Without this key the bundle has no icon anywhere
+        # LaunchServices draws one — Finder, the Accessibility list, dialogs.
+        CFBundleIconFile: AppIcon
+        CFBundleIconName: AppIcon
+        CFBundleIdentifier: com.sukhman.claudewatch
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        CFBundlePackageType: APPL
+        LSMinimumSystemVersion: "14.0"
+        LSUIElement: true          # menu bar only: no Dock icon, no app menu bar
+        NSHumanReadableCopyright: "Not affiliated with Anthropic."
+        NSAppleEventsUsageDescription: "Claude Watch activates the terminal or editor window for a Claude Code session when you click its row."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sukhman.claudewatch
+        MARKETING_VERSION: "1.0"
+        INFOPLIST_KEY_LSUIElement: YES
+        COMBINE_HIDPI_IMAGES: YES
+
+  ClaudeWatchTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Tests/ClaudeWatchTests
+    dependencies:
+      - target: ClaudeWatch
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.sukhman.claudewatch.tests
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ClaudeWatch.app/Contents/MacOS/ClaudeWatch"
+
+schemes:
+  ClaudeWatch:
+    build:
+      targets:
+        ClaudeWatch: all
+        ClaudeWatchTests: [test]
+    test:
+      targets:
+        - ClaudeWatchTests
+      gatherCoverageData: false
